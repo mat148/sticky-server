@@ -5,6 +5,8 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const { response } = require('express');
 const sanitizeHtml = require('sanitize-html');
+var Filter = require('bad-words'),
+filter = new Filter();
 
 const app = express();
 const port = 3000;
@@ -42,6 +44,7 @@ app.post('/stickyNoteAdd', (req, res) => {
     allowedTags: ['strong', 'i', 'h1', 'h2', 'h3', 'code', 'u' , 's'],
     allowedAttributes: {}
   });
+  if(stickyMessage != '') stickyMessage = filter.clean(stickyMessage);
   var fingerPrint = req.body.fingerPrint;
 
   console.log(fingerPrint);
@@ -65,9 +68,15 @@ app.post('/stickyNoteEdit', (req, res) => {
   var objectId = mongoose.Types.ObjectId(noteID);
   var note = req.body.note;
 
-  console.log(objectId, note);
+  var stickyMessage = sanitizeHtml(note, {
+    allowedTags: ['strong', 'i', 'h1', 'h2', 'h3', 'code', 'u' , 's'],
+    allowedAttributes: {}
+  });
+  if(stickyMessage != '') stickyMessage = filter.clean(stickyMessage);
 
-  conn.collections.stickynotes.updateOne({_id:objectId}, {$set:{note:note}}, function(err, result) {
+  console.log(objectId, stickyMessage);
+
+  conn.collections.stickynotes.updateOne({_id:objectId}, {$set:{note:stickyMessage}}, function(err, result) {
     if(err) {
       console.error(err);
     } else res.send(result);
