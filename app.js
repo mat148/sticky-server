@@ -74,6 +74,19 @@ app.post('/stickyNoteEdit', (req, res) => {
   })
 });
 
+app.post('/stickyNoteReport', (req, res) => {
+  var noteID = req.body.noteID;
+  var objectId = mongoose.Types.ObjectId(noteID);
+
+  console.log(`Reporting: ${objectId}`);
+
+  conn.collections.stickynotes.updateOne({_id:objectId}, {$set:{reported:true}}, function(err, result) {
+    if(err) {
+      console.error(err);
+    } else res.send(result);
+  })
+});
+
 app.post('/stickyNoteDelete', (req, res) => {
   var noteID = req.body.noteID;
   var objectId = mongoose.Types.ObjectId(noteID);
@@ -85,9 +98,14 @@ app.post('/stickyNoteDelete', (req, res) => {
 });
 
 app.get('/getAllSticky', (req, res) => {
-  var filter = {"endDate": {
-    $gt: today
-  }}
+  var filter = {
+    "endDate": {
+      $gt: today
+    },
+    "reported": {
+      $eq: false
+    }
+  }
 
   stickyNote.find(filter).then(function(response) {
     res.send(response);
