@@ -65,6 +65,8 @@ app.post('/stickyNoteEdit', (req, res) => {
   var objectId = mongoose.Types.ObjectId(noteID);
   var note = req.body.note;
 
+  console.log(objectId, note);
+
   conn.collections.stickynotes.updateOne({_id:objectId}, {$set:{note:note}}, function(err, result) {
     if(err) {
       console.error(err);
